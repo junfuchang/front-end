@@ -1,0 +1,66 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+h1 {
+  position: relative;
+  font-size: 10rem;
+  color: rgb(152, 188, 219);
+  /* 标题渐显 */
+  animation: show 3s ease-out forwards;
+}
+h1:before {
+  /* 通过子绝父相让两者文字重叠 */
+  position: absolute;
+  /* 文字内容必须是Unicode编码，并去掉其中的u */
+  content: "\6211\662f\6807\9898";
+
+  /* 渐变色背景 */
+  background-image: linear-gradient(
+    to right,
+    #ff8177 0%,
+    #ff867a 0%,
+    #ff8c7f 21%,
+    #f99185 52%,
+    #cf556c 78%,
+    #b12a5b 100%
+  );
+  /* 控制渐变色显示位置 */
+  /* https://developer.mozilla.org/zh-CN/docs/Web/CSS/background-clip */
+  background-clip: text;
+  -webkit-background-clip: text;
+  /* 颜色改为透明让背景色显示出来 */
+  color: transparent;
+
+  /* 制作遮罩 */
+  /* clip-path用于绘制形状 */
+  clip-path: polygon(0% 0%, 20% 0%, 10% 100%, -10% 100%);
+  /* 让遮罩动起来 */
+  animation: move 1s infinite ease-in alternate;
+}
+@keyframes move {
+  from {
+    clip-path: polygon(0% 0%, 20% 0%, 10% 100%, -10% 100%);
+  }
+  to {
+    clip-path: polygon(100% 0%, 120% 0%, 110% 100%, 90% 100%);
+  }
+}
+
+@keyframes show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
