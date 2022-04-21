@@ -1,0 +1,32 @@
+<van-image
+    v-if="isImgLoading"
+>
+  <template v-slot:loading>
+    <van-loading type="spinner" size="40" />
+  </template>
+</van-image>
+<img v-else :src="img" alt="二维码图片" class="imgStyle">
+
+data(){
+return{
+  img:'',
+  isImgLoading:true,
+}
+},
+
+downFile(this.downloadUrl,content).then(res=>{
+  function blobToDataURI(blob, callback) {
+    let reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onload = function (e) {
+      callback(e.target.result);
+    }
+  }
+  // let blobUrl = window.URL.createObjectURL(res.data)     //此处已经能正常显示图片
+  let that = this;
+  blobToDataURI(res.data,function(result){    //blob格式再转换为base64格式
+    let theResult = result.substr(21)
+    that.isImgLoading = false
+    that.img = 'data:image/png;base64,'+theResult;
+  })
+})

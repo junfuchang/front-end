@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            text-decoration: none;
+        }
+        /*1.设置最外层布局*/
+        .con{
+            margin: 0 auto;
+            display: grid;
+            height: 196px;
+            width: 516px;
+            grid-template-rows: repeat(3,1fr);
+            overflow: hidden;
+            border-radius: 10px;
+            gap: 1px;
+            
+        }
+        /*2.设置内部三个盒子布局*/
+        .c1,.c2,.c3{
+            display: grid;
+            grid-template-columns: 1fr 0.8fr [c1] 0.8fr 0.8fr [c2];
+        }
+        .c1{
+            background:linear-gradient(to right,#FA5956,#FB8550 52.8%,#FFBC49 52.8%,#FFD252);
+        }
+        .c2{
+            background:linear-gradient(to right,#4B8FED,#53BCED);
+        }
+        .c3{
+            background:linear-gradient(to right,#34C2A9,#6CD558);
+        }
+        /*3.设置元素布局*/
+        a{
+            display: grid;
+            color: white;
+            justify-content: center;
+            align-content: center;
+
+            border-right: 1px solid white;
+        }
+        /*4.设置每行元素首个布局*/
+        .box1,.box5,.box9{
+            padding-left: 14px;
+            justify-content: flex-start;
+        }
+        /*5.设置第一行第三个元素大小*/
+        .box3{
+            grid-column: c1/c2;
+        }
+        /*6.取消每行最后一个边框，去空白线*/
+        .box3,.box8,.box12{
+            border-right: none;
+        }
+        /*7.设置元素内的背景图片*/
+        .box1{
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-hotel@v7.15.png) no-repeat bottom right;
+            background-size: 73px auto;
+        }
+        .box2{
+            background: url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-minsu@v7.15.png) no-repeat bottom left;
+            background-size: 37px auto;
+        }
+        .box3{
+            color: #a05416;
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-hot.png) right bottom no-repeat;
+            background-size: 100% auto;
+        }
+        .box5{
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-flight@v7.15.png) no-repeat bottom right;
+            background-size: 79px auto;
+        }
+        .box6{
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-train.png) no-repeat bottom left;
+            background-size: 37px auto;
+        }
+        .box9{
+            background: url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-travel@v7.15.png) no-repeat bottom right;
+            background-size: 94px auto;
+        }
+        .box10{
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-dingzhi@v7.15.png) no-repeat bottom left;
+            background-size: 61px auto;
+        }
+    </style>
+</head>
+<body>
+<div class="con">
+    <div class="c1">
+        <a href="" class="box1">酒店</a>
+        <a href="" class="box2">民宿·客栈</a>
+        <a href="" class="box3">特价·爆款</a>
+        <!--        <a href="" class="box4"></a>  无用标签，仅便于box顺序排列-->
+    </div>
+    <div class="c2">
+        <a href="" class="box5">机票</a>
+        <a href="" class="box6">火车票</a>
+        <a href="" class="box7">汽车·船票</a>
+        <a href="" class="box8">专车·租车</a>
+    </div>
+    <div class="c3">
+        <a href="" class="box9">旅游</a>
+        <a href="" class="box10">高铁游</a>
+        <a href="" class="box11">邮轮游</a>
+        <a href="" class="box12">定制游</a>
+    </div>
+
+</div>
+</body>
+</html>

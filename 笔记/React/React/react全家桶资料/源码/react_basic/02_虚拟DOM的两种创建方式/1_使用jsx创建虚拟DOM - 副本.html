@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>1_使用jsx创建虚拟DOM</title>
+</head>
+<body>
+	<!-- 准备好一个“容器” -->
+	<div id="test"></div>
+
+	<!-- 引入react核心库 -->
+	<script type="text/javascript" src="../js/react.development.js"></script>
+	<!-- 引入react-dom，用于支持react操作DOM -->
+	<script type="text/javascript" src="../js/react-dom.development.js"></script>
+	<!-- 引入babel，用于将jsx转为js -->
+	<script type="text/javascript" src="../js/babel.min.js"></script>
+
+	<script type="text/babel" > /* 此处一定要写babel */
+		const Data = [
+		{id:1,name:"小王",age:18},
+		{id:2,name:"小董",age:19},
+		{id:3,name:"小常",age:20},
+		]
+
+		class App extends React.component {
+		render(){
+		console.log(this.props);
+		return(
+		<div>
+		<ShowName Data = {this.props}/>
+		<ChangWeather/>
+		<InputText/>
+		<Flash/>
+		</div>
+		)
+	}
+	}
+		class ShowName extends React.component {
+		render(){
+		const Data = this.props.Data;
+		return(
+		<div>
+		<h1>显示名字、年龄</h1>;
+		<ul>{
+		Data.map((value) => {
+		return <li id={value.id}>姓名：{value.name}  年龄：{value.age}</li>
+	})
+	}
+		</ul>
+		</div>
+		)
+	}
+	}
+		class ChangWeather extends React.component {
+
+	}
+		class InputText extends React.component {
+
+	}
+		class Flash extends React.component {
+
+	}
+		ReactDOM.render(<App Data = {Data}/>,document.getElementById('test'))
+	</script>
+</body>
+</html>
