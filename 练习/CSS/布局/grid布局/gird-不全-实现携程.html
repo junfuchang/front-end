@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Grid</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .con{
+            border: 1px solid #000;
+            margin: 0 auto;
+            display: grid;
+            height: 196px;
+            width: 516px;
+            grid-template-columns: 1fr 0.8fr [c1] 0.8fr 0.8fr [c2];
+            grid-template-rows: repeat(3,1fr);
+            gap: 1px 1px;
+            grid-template-areas: 'aaa' 'bbbb' 'cccc';
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        a{
+            text-decoration: none;
+            border: 1px solid #000;
+            font-size: 14px;
+            /*color: white;*/
+            display: grid;
+            justify-content: center;
+            align-content: center;
+        }
+        .box1,.box5,.box9{
+            padding-left: 14px;
+            justify-content: flex-start;
+        }
+
+        .box1{
+            background:url(http://pic.c-ctrip.com/platform/h5/home/grid-nav-items-hotel@v7.15.png) no-repeat bottom right;
+            background-size: 73px auto;
+        }
+        .box2{
+            background: url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-minsu@v7.15.png) no-repeat bottom left;
+            background-size: 37px auto;
+        }
+        .box3{
+            grid-column: c1 / c2;
+            color: #a05416;
+
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-hot.png) right bottom no-repeat;
+            background-size: 100% auto;
+        }
+        .box5{
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-flight@v7.15.png) no-repeat bottom right;
+            background-size: 79px auto;
+        }
+        .box6{
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-train.png) no-repeat bottom left;
+            background-size: 37px auto;
+        }
+        .box9{
+            background: url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-travel@v7.15.png) no-repeat bottom right;
+            background-size: 94px auto;
+        }
+        .box10{
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-dingzhi@v7.15.png) no-repeat bottom left;
+            background-size: 61px auto;
+        }
+
+        /*
+        .box1,.box2,.box3{
+            grid-area: a;
+        }
+        .box5,.box6,.box7,.box8{
+            grid-area: b;
+        }
+        .box9,.box10,.box11,.box12{
+            grid-area: c;
+        }
+        */
+
+
+    </style>
+</head>
+<body>
+    <div class="con">
+        <a href="" class="box1">酒店</a>
+        <a href="" class="box2">民宿·客栈</a>
+        <a href="" class="box3">特价·爆款</a>
+<!--        <a href="" class="box4"></a>-->
+        <a href="" class="box5">机票</a>
+        <a href="" class="box6">火车票</a>
+        <a href="" class="box7">汽车·船票</a>
+        <a href="" class="box8">专车·租车</a>
+        <a href="" class="box9">旅游</a>
+        <a href="" class="box10">高铁游</a>
+        <a href="" class="box11">邮轮游</a>
+        <a href="" class="box12">定制游</a>
+    </div>
+</body>
+</html>

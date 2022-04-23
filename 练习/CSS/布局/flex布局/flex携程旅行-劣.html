@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            text-decoration: none;
+        }
+        ul{
+            margin:0 auto;
+            height: 196px;
+            width: 516px;
+            overflow: hidden;
+            border-radius: 10px;
+
+            display: flex;
+            flex-flow: column;
+        }
+        .box{
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+        .box:first-of-type{
+            background:linear-gradient(to right,#FA5956,#FB8550 54%);
+        }
+        .box:nth-of-type(2){
+            background:linear-gradient(to right,#4B8FED,#53BCED);
+        }
+        .box:nth-of-type(2) a{
+            border-top: 1px solid white;
+            border-bottom: 1px solid white;
+        }
+        .box:last-of-type{
+            background:linear-gradient(to right,#34C2A9,#6CD558);
+        }
+        a,span{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 14px;
+            border-right: 1px solid white;
+        }
+        .div1{
+            padding: 16px;
+            justify-content: flex-start;
+            flex: 1;
+        }
+        .div2{
+            flex: 0.8;
+        }
+        .div3{
+            border-right: 2px solid white;
+            flex: 1.6;
+        }
+        .div4{
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+        span{
+            background:linear-gradient(to right,#FFBC49,#FFD252);
+        }
+        /*第一行*/
+        .box:first-of-type a:first-of-type{
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-hotel@v7.15.png) no-repeat bottom right;
+            background-size: 73px auto;
+        }
+        .box:first-of-type a:nth-of-type(2){
+            background: url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-minsu@v7.15.png) no-repeat bottom left;
+            background-size: 37px auto;
+        }
+        .box:first-of-type span a:last-of-type{
+            color: #a05416;
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-hot.png) right bottom no-repeat;
+            background-size: 100% auto;
+        }
+        /*第二行*/
+        .box:nth-of-type(2) a:first-of-type{
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-flight@v7.15.png) no-repeat bottom right;
+            background-size: 79px auto;
+        }
+        .box:nth-of-type(2) a:nth-of-type(2){
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-train.png) no-repeat bottom left;
+            background-size: 37px auto;
+        }
+        /*第三行*/
+        .box:last-of-type a:first-of-type{
+            background: url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-travel@v7.15.png) no-repeat bottom right;
+            background-size: 94px auto;
+        }
+        .box:last-of-type a:nth-of-type(2){
+            background:url(//pic.c-ctrip.com/platform/h5/home/grid-nav-items-dingzhi@v7.15.png) no-repeat bottom left;
+            background-size: 61px auto;
+        }
+    </style>
+</head>
+<body>
+    <ul>
+        <li class="box" ><a class="div1" href="">酒店</a><a class="div2" href="">民宿·客栈</a><span  class="div3"><a class="div4" href="">特价·爆款</a></span></li>
+        <li class="box"><a class="div1" href="">机票</a><a class="div2" href="">火车票</a><a class="div2" href="">汽车·船票</a><a class="div2" href="">专车·租车</a></li>
+        <li class="box"><a class="div1" href="">旅游</a><a class="div2" href="">高铁游</a><a class="div2" href="">邮轮游</a><a class="div2" href="">定制游</a></li>
+    </ul>
+</body>
+</html>
