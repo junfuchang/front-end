@@ -1556,6 +1556,8 @@ function emitValue(e) {
 
 在组件选项中设置 `inheritAttrs: false`。
 
+最常见的场景就是 attribute 需要应用在根节点以外的其他元素上
+
 使用 `<script setup>`需要一个额外的 `<script>` 块声明选项：
 
 ```vue
@@ -1571,6 +1573,686 @@ export default {
 </script>
 ```
 
+透传进来的 attribute 可以在**模板的表达式**中直接用 `$attrs` 访问到:
+
+- 透传 attributes 在 JavaScript 中保留了它们原始的大小写，所以像 `foo-bar` 这样的一个 attribute 需要通过 `$attrs['foo-bar']` 来访问
+-  `@click`被暴露为一个函数 `$attrs.onClick`
+
+可以使用
+
 ### 多根节点透传
 
-多根结点默认没有自动 attribute 透传行为
+多根结点默认没有自动 attribute 透传行为，需要使用`$attrs`进行显式绑定
+
+### 在 JavaScript 中访问透传 Attribute
+
+在 `<script setup>` 中使用 `useAttrs()` API 
+
+```vue
+<script setup>
+import { useAttrs } from 'vue'
+
+const attrs = useAttrs()
+</script>
+```
+
+`attrs` 对象总是反映为最新的透传 attribute，但它并不是响应式的 (考虑到性能因素)。你不能通过侦听器去监听它的变化。
+
+
+
+## 5. 插槽
+
+### 插槽内容与插口
+
+![插槽图示](https://staging-cn.vuejs.org/assets/slots.dbdaf1e8.png)
+
+### 渲染作用域
+
+插槽内容可以访问到父组件的数据作用域，**无法访问**子组件的数据
+
+### 默认内容
+
+写在 `<slot>` 标签之间，使其成为默认内容：
+
+```vue
+<button type="submit">
+  <slot>
+    Submit <!-- 默认内容 -->
+  </slot>
+</button>
+```
+
+### 具名插槽
+
+没有提供 `name` 的 `<slot>` 插口会隐式地命名为“default”
+
+`v-slot` 有对应的简写 `#`
+
+```vue
+<!-- 插槽定义 -->
+<div class="container">
+  <header>
+    <slot name="header"></slot>
+  </header>
+  <main>
+    <slot></slot>
+  </main>
+  <footer>
+    <slot name="footer"></slot>
+  </footer>
+</div>
+
+<!-- 插槽使用 -->
+<BaseLayout>
+  <template #header>
+    <h1>Here might be a page title</h1>
+  </template>
+
+  <!-- 隐式的默认插槽 -->
+  <p>A paragraph for the main content.</p>
+  <p>And another one.</p>
+
+  <template #footer>
+    <p>Here's some contact info</p>
+  </template>
+</BaseLayout>
+```
+
+### 作用域插槽
+
+![scoped slots diagram](https://staging-cn.vuejs.org/assets/scoped-slots.1c6d5876.svg)
+
+***无渲染组件***
+
+一些组件可能**只包括了逻辑而不需要自己渲染内容**，视图输出通过作用域插槽全权交给了消费者组件。我们将这种类型的组件称为**无渲染组件**。
+
+
+
+## 6. 依赖注入
+
+![Provide/inject 模式](https://staging-cn.vuejs.org/assets/provide-inject.3e0505e4.png)
+
+### Provide (供给)
+
+```vue
+<script setup>
+import { provide } from 'vue'
+
+provide(/* 注入名 */ 'message', /* 值 */ 'hello!')
+</script>
+```
+
+供给的响应式状态使后代组件可以由此和供给者建立响应式联系
+
+### 应用层 Provide
+
+我们还可以在整个应用层面做供给：
+
+```js
+import { createApp } from 'vue'
+
+const app = createApp({})
+
+app.provide(/* 注入名 */ 'message', /* 值 */ 'hello!')
+```
+
+### Inject (注入)
+
+如果供给的值是一个 ref，注入进来的就是它本身，而**不会**自动解包。这使得被注入的组件保持了和供给者的响应性链接。
+
+```vue
+<script setup>
+import { inject } from 'vue'
+
+const message = inject('message')
+</script>
+```
+
+***注入的默认值***
+
+```js
+// 如果没有祖先组件提供 "message"
+// `value` 会是 "这是默认值"
+const value = inject('message', '这是默认值')
+```
+
+> 在一些场景中，默认值可能需要通过调用一个函数或初始化一个类来取得。为了避免在不使用可选值的情况下进行不必要的计算或产生副作用，我们可以使用工厂函数来创建默认值：
+
+```js
+const value = inject('key', () => new ExpensiveClass())
+```
+
+### 配合响应性
+
+**建议尽可能将任何对响应式状态的变更都保持在 \*provider\* 内部**
+
+若要在`inject`组件中修改数据，推荐在 `provider` 组件内提供一个更改数据方法
+
+```vue
+provide('location', {
+  location,
+  updateLocation
+})
+```
+
+如果你想确保从 `provide` 传过来的数据不能被 `injector` 的组件更改，你可以使用[`readonly()`](https://staging-cn.vuejs.org/api/reactivity-core.html#readonly) 来包装提供的值。
+
+```vue
+<script setup>
+import { ref, provide, readonly } from 'vue'
+
+const count = ref(0)
+provide('read-only-count', readonly(count))
+</script>
+```
+
+### 使用 Symbol 作注入名
+
+建议在一个单独的文件中导出这些注入名 Symbol：
+
+```js
+// keys.js
+export const myInjectionKey = Symbol()
+
+// 在供给方组件中
+import { provide } from 'vue'
+import { myInjectionKey } from './keys.js'
+
+provide(myInjectionKey, { /*
+  要供给的数据
+*/ });
+// 注入方组件
+import { inject } from 'vue'
+import { myInjectionKey } from './keys.js'
+
+const injected = inject(myInjectionKey)
+```
+
+
+
+## 7. 异步组件
+
+Vue 提供了一个 [`defineAsyncComponent`](https://staging-cn.vuejs.org/api/general.html#defineasynccomponent) 方法：
+
+```js
+import { defineAsyncComponent } from 'vue'
+
+const AsyncComp = defineAsyncComponent(() => {
+  return new Promise((resolve, reject) => {
+    // ...从服务器获取组件
+    resolve(/* 获取到的组件 */)
+  })
+})
+// ... 像使用其他一般组件一样使用 `AsyncComp`
+```
+
+我们在SFC中可以这样使用
+
+```js
+import { defineAsyncComponent } from 'vue'
+
+//得到的 AsyncComp 是一个包装器组件，仅在页面需要它渲染时才调用加载函数
+const AsyncComp = defineAsyncComponent(() =>
+  import('./components/MyComponent.vue')
+)
+```
+
+### 加载与错误状态
+
+```js
+const AsyncComp = defineAsyncComponent({
+  // 加载函数
+  loader: () => import('./Foo.vue'),
+
+  // 加载异步组件时使用的组件
+  loadingComponent: LoadingComponent,
+  // 展示加载组件前的延迟时间，默认为 200ms（避免加载动画一闪而过）
+  delay: 200,
+
+  // 加载失败后展示的组件
+  errorComponent: ErrorComponent,
+  // 如果提供了一个 timeout 时间限制，并超时了
+  // 也会显示这里配置的报错组件，默认值是：Infinity
+  timeout: 3000
+})
+```
+
+### 搭配 Suspense 使用
+
+> [Suspense | Vue.js (vuejs.org)](https://staging-cn.vuejs.org/guide/built-ins/suspense.html)
+
+
+
+# 四、可重用性
+
+## 1. 组合式函数
+
+### 什么是“组合式函数”？
+
+“组合式函数”是一个利用 Vue 组合式 API 来封装和复用**有状态逻辑**的函数
+
+**无状态的逻辑**：它在接收一些输入后立刻返回所期望的输出。
+
+```js
+// fetch.js
+import { ref, isRef, unref, watchEffect } from 'vue'
+
+export function useFetch(url) {
+  const data = ref(null)
+  const error = ref(null)
+
+  function doFetch() {
+    // 在请求之前重设状态...
+    data.value = null
+    error.value = null
+    // unref() 解包可能为 ref 的值
+    fetch(unref(url))
+      .then((res) => res.json())
+      .then((json) => (data.value = json))
+      .catch((err) => (error.value = err))
+  }
+
+  if (isRef(url)) {
+    // 若输入的 URL 是一个 ref，那么启动一个响应式的请求
+    watchEffect(doFetch)
+  } else {
+    // 否则只请求一次
+    // 避免监听器的额外开销
+    doFetch()
+  }
+
+  return { data, error }
+}
+```
+
+### 约定和最佳实践
+
+***命名***
+
+以`use`开头，小驼峰式
+
+***输入参数***
+
+尽管其响应性不依赖 ref，组合式函数仍可接收 ref 参数。你最好在处理输入参数时兼容 ref 而不只是原始的值。
+
+```js
+import { unref } from 'vue'
+
+function useFeature(maybeRef) {
+  // 若 maybeRef 确实是一个 ref，它的 .value 会被返回
+  // 否则，maybeRef 会被原样返回
+  const value = unref(maybeRef)
+}
+```
+
+如果你的组合式函数在接收 ref 为参数时会产生响应式 effect，请确保使用 `watch()` 显式地监听此 ref，或者在 `watchEffect()` 中调用 `unref()` 来进行正确的追踪。
+
+***返回值***
+
+推荐始终返回一个 ref 对象，这样该函数在组件中解构之后仍可以保持响应性
+
+若希望以对象 property 的形式返回，可以将返回的对象用 `reactive()` 包装，这样其中的 ref 会被自动解包
+
+```js
+const mouse = reactive(useMouse())
+// mouse.x 链接到了原来的 x ref
+console.log(mouse.x)
+```
+
+***副作用***
+
+>在组合式函数中的确可以执行副作用 (例如：添加 DOM 事件监听器或者请求数据)，但请注意以下规则：
+>
+>- 如果你在一个应用中使用了[服务器端渲染](https://staging-cn.vuejs.org/guide/scaling-up/ssr.html) (SSR)，请确保在后置加载的声明钩子上执行 DOM 相关的副作用，例如：`onMounted()`。这些钩子仅会在浏览器中使用，因此可以确保能访问到 DOM。
+>- 确保在 `onUnmounted()` 时清理副作用。举个例子，如果一个组合式函数设置了一个事件监听器，它就应该在 `onUnmounted()` 中被移除 (就像我们在 `useMouse()` 示例中看到的一样)。当然也可以像之前的`useEventListener()` 示例那样，使用一个组合式函数来自动帮你做这些事。
+
+***使用限制***
+
+应始终被**同步地**调用
+
+目的：
+
+1. 可以在组合式函数中注册生命周期钩子
+2. 计算属性和监听器可以连接到当前组件实例，以便在组件卸载时处理掉。
+
+> `<script setup>` 是唯一在调用 await 之后仍可调用组合式函数的地方。编译器会在异步操作之后自动为你恢复当前活跃的组件实例。
+
+
+
+## 2. 自定义指令
+
+目的是重用涉及普通元素的底层 DOM 访问逻辑
+
+在 `<script setup>` 中，任何以 v 开头的驼峰式命名的变量都可以被用作一个自定义指令。
+
+~~~vue
+<script setup>
+const vFocus = {
+  mounted: (el) => el.focus()
+}
+</script>
+
+<template>
+  <input v-focus />
+</template>
+~~~
+
+### 指令钩子
+
+```js
+const myDirective = {
+  // 在绑定元素的 attribute 前或事件监听器应用前调用
+  created(el, binding, vnode, prevVnode) {
+    // el 绑定的元素，可以直接操作DOM
+    // binding对象：value、oldvalue、arg、modifiers、instance、dir
+    // vnode：代表绑定元素的底层 VNode。
+    // prevNode：之前的渲染中代表指令所绑定元素的 VNode
+  },
+  // 在元素被插入到 DOM 前调用
+  beforeMount() {},
+  // 在绑定元素的父组件及他自己的所有子节点都挂载完成后调用
+  mounted() {},
+  // 绑定元素的父组件更新前调用
+  beforeUpdate() {},
+  // 在绑定元素的父组件及他自己的所有子节点都更新后调用
+  updated() {},
+  // 绑定元素的父组件卸载前调用
+  beforeUnmount() {},
+  // 绑定元素的父组件卸载后调用
+  unmounted() {}
+  }
+}
+```
+
+注：**不**推荐在组件上使用自定义指令。
+
+
+
+## 3.  插件
+
+插件是一种能为 Vue 添加全局功能的工具代码
+
+```js
+export default {
+  install: (app, options) => {
+  	// 操作
+    // 可以使用provide
+  	app.provide('i18n', options)
+  }
+}
+```
+
+
+
+# 五、内置组件
+
+## 1. `<Transition>`
+
+用处：
+
+- 由 `v-if` 所带来的条件渲染
+- 由 `v-show` 所带来的条件显示
+- 由特殊元素 `<component>` 切换的动态组件
+
+~~~vue
+<script setup>
+import { ref } from 'vue'
+const show = ref(true)
+</script>
+
+<template>
+  <button @click="show = !show">Toggle</button>
+  <Transition name='demo'>
+    <p v-if="show">hello</p>
+  </Transition>
+</template>
+
+<style>
+.demo-enter-active,
+.demo-leave-active {
+  /* 也可用使用动画animation */
+  transition: all 0.5s ease;
+}
+
+.demo-enter-from,
+.demo-leave-to {
+  opacity: 0;
+  color:red;
+}
+</style>
+~~~
+
+***自定义过渡 class***
+
+可以自定义过渡的类名（通常在使用动画库的时候使用）
+
+通过给组件设置对应属性即可：
+
+- `enter-from-class`
+- `enter-active-class`
+- `enter-to-class`
+- `leave-from-class`
+- `leave-active-class`
+- `leave-to-class`
+
+
+
+***同时使用 transition 和 animation***
+
+可以通过传递`type`属性告诉我们更关心哪种类型
+
+```vue
+传入的值是 `animation` 或 `transition`
+<Transition type="animation">...</Transition>
+```
+
+***深层级过渡与显式过渡时间***
+
+可以不同的过渡时间实现不同层级组件交错的过渡
+
+### JavaScript 钩子
+
+可以在过渡的不同时刻挂载相应的钩子函数
+
+使用 `:css="false"` prop将跳过默认的 CSS 过渡
+
+### 可重用过渡
+
+可以封装个过渡组件
+
+### 出现时过渡
+
+ `appear` attribute会在初次渲染时应用一个过渡效果
+
+### 过渡模式
+
+-  `mode="out-in"` 
+
+离开动画和进入动画可以按序执行
+
+-  `mode="in-out"` 
+
+离开动画和进入动画可以按序执行
+
+
+
+## 2. `<TransitionGroup>`
+
+> 用于呈现一个列表中的元素或组件的插入、移除和顺序改变的动画效果。
+
+和`<Transition>` 的区别：
+
+1. 子元素必须含有`key`
+2. 默认情况下需要传入`tag`来指定一个包装器元素
+3. CSS 过渡 class 会被应用在其中的每一个元素上
+4. 过渡模式不可用
+
+~~~vue
+<TransitionGroup name="list" tag="ul">
+  <li v-for="item in items" :key="item">
+    {{ item }}
+  </li>
+</TransitionGroup>
+
+<style>
+.list-move, /* 对移动中的元素应用的过渡 */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+/* 确保将离开的元素从布局流中删除
+  以便能够正确地计算移动的动画。 */
+.list-leave-active {
+  position: absolute;
+}
+</style>
+~~~
+
+
+
+## 3. `<KeepAlive>`
+
+可以在动态切换多个组件时视情况缓存组件实例
+
+```vue
+<!-- 非活跃的组件将会被缓存！ -->
+<KeepAlive>
+  <component :is="activeComponent" />
+</KeepAlive>
+```
+
+### 包含/排除
+
+`<KeepAlive>`通过 `include` 和 `exclude` prop 来定制该行为，值的类型：
+
+1. 以逗号分隔的字符串：`"a,b"`
+2. 正则（需要使用`v-bind`）：`:include="/a|b/"`
+3. 上述两则组成的数组
+
+规则将匹配组件的`name`属性来表示是否需要被缓存
+
+### 最大缓存实例数
+
+传入 `max` prop 来限制可被缓存的最大组件实例数，满后最久未被使用的缓存实例将被销毁
+
+### 缓存实例的生命周期
+
+以下两个钩子不仅适用于 `<KeepAlive>` 缓存的根组件，也适用于缓存树中的后代组件。
+
+```vue
+<script setup>
+import { onActivated, onDeactivated } from 'vue'
+
+onActivated(() => {
+  // 调用时机为*首次挂载*
+  // 以及每次从缓存中*被重新插入*时
+})
+
+onDeactivated(() => {
+  // 在从 DOM 上移除、进入缓存
+  // 以及组件卸载时调用
+})
+</script>
+```
+
+
+
+## 4. Teleport·传送门
+
+改变内部组件的DOM结构
+
+```vue
+<button @click="open = true">Open Modal</button>
+
+<Teleport to="body">
+  <div v-if="open" class="modal">
+    <p>Hello from the modal!</p>
+    <button @click="open = false">Close</button>
+  </div>
+</Teleport>
+```
+
+可以使用`disable`属性禁用传送门
+
+### 搭配组件使用
+
+不会影响组件间的逻辑关系，他只是改变了dom结构
+
+### 同一目标上多个传送门
+
+多个传送门应用于一个目标，那么目标中的组件间将按顺序排列
+
+
+
+## 5. Suspense
+
+`<Suspense>` 可以等待的异步依赖有两种：
+
+1. 带有异步 `setup()` 钩子的组件。这也包含了使用 `<script setup>` 时有顶层 `await` 表达式的组件。
+
+```vue
+<script setup>
+const res = await fetch(...)
+const posts = await res.json()
+</script>
+```
+
+2. 异步组件
+
+若对异步组件用`<Suspense>`处理，加载状态是由 `<Suspense>` 控制，而该组件自己的加载、报错、延时和超时等选项都将被忽略
+
+异步组件指定 `suspensible: false` 则让组件始终自己控制其加载状态
+
+### 加载中状态
+
+有两个插槽：`#default` 和 `#fallback`
+
+```vue
+<Suspense>
+  <!-- 具有深层异步依赖的组件 -->
+  <!-- 内容更新不会退回到Loading -->
+  <Dashboard />
+
+  <!-- 在 #fallback 插槽中显示 “正在加载中” -->
+  <template #fallback>
+    Loading...
+  </template>
+</Suspense>
+```
+
+### 错误处理
+
+目前还不提供错误处理
+
+> 不过你可以使用 [`errorCaptured`](https://staging-cn.vuejs.org/api/options-lifecycle.html#errorcaptured) 选项或者 [`onErrorCaptured()`](https://staging-cn.vuejs.org/api/composition-api-lifecycle.html#onerrorcaptured) 钩子，在使用到 `<Suspense>` 的父组件中捕获和处理异步错误。
+
+### 和其他组件组合
+
+Vue Router 使用动态导入对[懒加载组件](https://next.router.vuejs.org/guide/advanced/lazy-loading.html)进行了内置支持。这些与异步组件不同，目前他们不会触发 `<Suspense>`。
+
+```vue
+<RouterView v-slot="{ Component }">
+  <template v-if="Component">
+    <Transition mode="out-in">
+      <KeepAlive>
+        <Suspense>
+          <!-- 主要内容 -->
+          <component :is="Component"></component>
+
+          <!-- 加载中状态 -->
+          <template #fallback>
+            正在加载...
+          </template>
+        </Suspense>
+      </KeepAlive>
+    </Transition>
+  </template>
+</RouterView>
+```
